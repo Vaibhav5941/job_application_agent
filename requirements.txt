@@ -1,0 +1,6 @@
+langchain
+cohere
+PyPDF2
+python-docx
+streamlit
+psycopg2-binary
