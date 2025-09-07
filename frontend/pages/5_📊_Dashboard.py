@@ -8,18 +8,255 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../..")
 
 from backend.database import (
     create_enhanced_tables, add_job_application, update_application_status,
-    get_user_applications, get_application_stats
+    get_user_applications, get_application_stats,delete_job_application
 )
 
 # Initialize enhanced database
 create_enhanced_tables()
 
-st.title("📊 Application Tracking Dashboard")
+# Custom CSS
+st.markdown("""
+<style>
+            * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        
+        .email-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 1.2rem 2rem;
+            border-radius: 20px;
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .email-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: shimmer 6s ease-in-out infinite;
+        }
+        
+        .email-header h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            margin-bottom: 0;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+        
+        .email-header .icon {
+            font-size: 3.5rem;
+            margin-bottom: 0rem;
+            display: inline-block;
+            animation: float 2s ease-in-out infinite;
+        }
+        
+        .email-header p {
+            font-size: 1 rem;
+            font-weight: 300;
+            opacity: 0.95;
+            position: relative;
+            z-index: 2;
+            line-height: 1.2;
+        }
+        
+        .feature-badges {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .badge {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.3);
+            padding: 0.7rem 1.5rem;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .badge:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
 
-# Check authentication
+        
+        .demo-text {
+            text-align: center;
+            color: #666;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(0deg); }
+            50% { transform: translateX(-50%) translateY(-50%) rotate(180deg); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+ @media (max-width: 1024px) {
+            .email-header {
+                padding: 2.5rem 2rem;
+            }
+            
+            .email-header h1 {
+                font-size: 2.4rem;
+            }
+            
+            .email-header .icon {
+                font-size: 3rem;
+            }
+        }
+        
+        /* Mobile landscape */
+        @media (max-width: 768px) {
+           
+            
+            .email-header {
+                padding: 2rem 1.5rem;
+                margin-bottom: 1.5rem;
+                border-radius: 15px;
+            }
+            
+            .email-header h1 {
+                font-size: 2rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .email-header .icon {
+                font-size: 2.5rem;
+                margin-bottom: 0.8rem;
+            }
+            
+            .email-header p {
+                font-size: 1.1rem;
+                line-height: 1.5;
+            }
+            
+            .feature-badges {
+                margin-top: 1.5rem;
+                gap: 0.8rem;
+            }
+            
+            .badge {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.85rem;
+            }
+            
+            .content-area {
+                padding: 1.5rem;
+                border-radius: 12px;
+            }
+        }
+        
+        /* Mobile portrait */
+        @media (max-width: 480px) {
+
+            
+            .email-header {
+                padding: 1rem 1rem;
+                margin-bottom: 1rem;
+                border-radius: 12px;
+            }
+            
+            .email-header h1 {
+                font-size: 1.2rem;
+                margin-bottom: 0rem;
+            }
+            
+            .email-header .icon {
+                font-size: 2.2rem;
+                margin-bottom: 0rem;
+            }
+            
+            .email-header p {
+                font-size: 0.8rem;
+                line-height: 1;
+            }
+            
+            .feature-badges {
+                flex-direction: row;
+                align-items: center;
+                gap: 0.5rem;
+                margin-top: 1.2rem;
+            }
+            
+            .badge {
+                width: fit-content;
+                padding: 0.5rem 1rem;
+                font-size: 0.8rem;
+            }
+            
+            .content-area {
+                padding: 1.2rem;
+                border-radius: 10px;
+            }
+            
+            .demo-text h3 {
+                font-size: 1.1rem;
+            }
+            
+            .demo-text p {
+                font-size: 0.95rem;
+            }
+        }
+
+
+</style>
+""", unsafe_allow_html=True)
+
+# Header
+st.markdown("""
+<div class="email-header">
+        <div class="icon">✉️</div>
+        <h1>Application Tracking Dashboard</h1>
+        <p>Track, manage, and analyze all your job applications in one place with clarity and efficiency</p>
+        <div class="feature-badges">
+            <div class="badge">🚀 Total applications</div>
+            <div class="badge">📝 Status distribution</div>
+            <div class="badge">⚡ Skills match scores</div>
+            <div class="badge">📊 Recent applications list</div>
+        </div>
+    </div>
+    
+""", unsafe_allow_html=True)
+
+
+
+# Authentication check
 if "user" not in st.session_state or not st.session_state.user:
-    st.warning("⚠️ Please log in to view your dashboard")
-    st.info("👈 Go to the Auth page to log in")
+    st.error("🔒 Access Denied: Please log in to send emails")
+    col1, col2 = st.columns(2)
+    with col1:
+        if st.button("🔑 Go to Login", type="primary", use_container_width=True):
+            st.switch_page("pages/0_👤_Auth.py")
+    with col2:
+        if st.button("🏠 Home", use_container_width=True):
+            st.switch_page("app.py")
     st.stop()
 
 user_id = st.session_state.user["id"]
@@ -33,7 +270,7 @@ st.success(f"Welcome back, {user_name}! 👋")
 stats = get_application_stats(user_id)
 
 if stats:
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4, col5, col6 = st.columns(6)
     
     with col1:
         st.metric("Total Applications", stats.get('total', 0))
@@ -46,8 +283,11 @@ if stats:
     
     with col4:
         st.metric("This Month", stats.get('this_month', 0))
-    
+        
     with col5:
+        st.metric("Offers Rejected", stats.get('rejected', 0))        
+    
+    with col6:
         st.metric("Success Rate", f"{stats.get('success_rate', 0)}%")
 
 # ============================================================================
@@ -91,7 +331,7 @@ if applications:
 # ============================================================================
 # QUICK ACTIONS
 # ============================================================================
-st.subheader("⚡ Quick Actions")
+
 
 col1, col2 = st.columns(2)
 
@@ -126,9 +366,16 @@ if st.session_state.get('show_add_form', False):
             deadline = st.date_input("Application Deadline", value=None)
         
         notes = st.text_area("Notes", placeholder="Additional information about this application...")
+# Form buttons in columns
+        button_col1, button_col2 = st.columns(2)
         
-        submitted = st.form_submit_button("Add Application")
+        with button_col1:
+            submitted = st.form_submit_button("✅ Add Application", type="primary")
         
+        with button_col2:
+            cancelled = st.form_submit_button("❌ Cancel", type="secondary")
+        
+        # Handle form submission
         if submitted and company_name and position_title:
             try:
                 app_id = add_job_application(
@@ -148,6 +395,11 @@ if st.session_state.get('show_add_form', False):
                 st.error(f"❌ Error adding application: {str(e)}")
         elif submitted:
             st.error("⚠️ Please fill in required fields (Company Name and Position Title)")
+        
+        # Handle cancel button
+        if cancelled:
+            st.session_state.show_add_form = False
+            st.rerun()
 
 # ============================================================================
 # APPLICATIONS TABLE
@@ -188,6 +440,9 @@ if applications:
                     index=["applied", "viewed", "phone_screen", "interview", "technical", "offer", "rejected", "withdrawn"].index(app[3]),
                     key=f"status_{app[0]}"
                 )
+            action_col1, action_col2 = st.columns(2)
+                
+            with action_col1:    
                 
                 if st.button(f"Update", key=f"update_{app[0]}"):
                     if new_status != app[3]:
@@ -197,6 +452,34 @@ if applications:
                             st.rerun()
                         except Exception as e:
                             st.error(f"❌ Update failed: {str(e)}")
+                            
+            with action_col2:
+                    if st.button(f"🗑️ Delete", key=f"delete_{app[0]}", type="secondary"):
+                        # Confirmation dialog using session state
+                        st.session_state[f"confirm_delete_{app[0]}"] = True
+            
+            # Delete confirmation
+            if st.session_state.get(f"confirm_delete_{app[0]}", False):
+                st.warning("⚠️ Are you sure you want to delete this application? This action cannot be undone.")
+                
+                confirm_col1, confirm_col2 = st.columns(2)
+                
+                with confirm_col1:
+                    if st.button(f"✅ Yes, Delete", key=f"confirm_yes_{app[0]}", type="primary"):
+                        try:
+                            delete_job_application(app[0], user_id)
+                            st.success("✅ Application deleted successfully!")
+                            # Clear confirmation state
+                            st.session_state[f"confirm_delete_{app[0]}"] = False
+                            st.rerun()
+                        except Exception as e:
+                            st.error(f"❌ Delete failed: {str(e)}")
+                            st.session_state[f"confirm_delete_{app[0]}"] = False
+                
+                with confirm_col2:
+                    if st.button(f"❌ Cancel", key=f"confirm_no_{app[0]}"):
+                        st.session_state[f"confirm_delete_{app[0]}"] = False
+                        st.rerun()                
             
             if app[8]:  # notes
                 st.write(f"**Notes:** {app[8]}")
