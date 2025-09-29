@@ -1,4 +1,2 @@
-INSERT INTO resumes (name, email, skills)
-VALUES 
-('Vaibhav Gupta', 'vaibhav@example.com', 'Python, Django, React'),
-('John Doe', 'john@example.com', 'Java, Spring, SQL');
+-- Example user (password should be bcrypt-hashed in application flow; this is illustrative only)
+-- INSERT INTO users (name, email, password) VALUES ('Demo User', 'demo@example.com', '$2b$12$hash');

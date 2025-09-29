@@ -25,7 +25,7 @@ def clean_json_response(response_text: str) -> str:
         }
         return json.dumps(fallback)
 
-def save_application(resume_text: str, jd_text: str, skills: str, cover_letter: str):
+def save_application(resume_text: str, jd_text: str, skills: str, cover_letter: str,user_id: int):
     """Save application data to database with proper error handling"""
     conn = None
     try:
@@ -36,12 +36,14 @@ def save_application(resume_text: str, jd_text: str, skills: str, cover_letter: 
         clean_skills = clean_json_response(skills)
         
         cur.execute("""
-            INSERT INTO applications (resume_text, jd_text, skills_match, cover_letter)
-            VALUES (%s, %s, %s, %s)
-        """, (resume_text, jd_text, clean_skills, cover_letter))
-        
+            INSERT INTO applications (resume_text, jd_text, skills_match, cover_letter, user_id)
+            VALUES (%s, %s, %s, %s, %s)
+            RETURNING id
+        """, (resume_text, jd_text, clean_skills, cover_letter, user_id))
+        app_id = cur.fetchone()[0]
         conn.commit()
         cur.close()
+        return app_id
         
     except Exception as e:
         print(f"Database error: {e}")
@@ -52,7 +54,7 @@ def save_application(resume_text: str, jd_text: str, skills: str, cover_letter: 
         if conn:
             conn.close()
 
-def fetch_applications():
+def fetch_applications(user_id: int):
     """Fetch all applications from database"""
     conn = None
     try:
@@ -62,8 +64,9 @@ def fetch_applications():
         cur.execute("""
             SELECT id, skills_match, cover_letter, created_at 
             FROM applications 
+            WHERE user_id = %s
             ORDER BY created_at DESC
-        """)
+        """,(user_id,))
         
         rows = cur.fetchall()
         cur.close()
@@ -77,15 +80,24 @@ def fetch_applications():
         if conn:
             conn.close()
         
-def delete_application(app_id: int):
+def delete_application(app_id: int, user_id: int):
     """Delete a specific application by ID"""
     conn = None
     try:
         conn = psycopg2.connect(DB_URL)
         cur = conn.cursor()
-        cur.execute("DELETE FROM applications WHERE id = %s", (app_id,))
+        cur.execute("""
+            DELETE FROM applications 
+            WHERE id = %s AND user_id = %s
+        """, (app_id, user_id))
+    # Check if any row was actually deleted
+        if cur.rowcount == 0:
+            raise ValueError("Application not found or you don't have permission to delete it")
+                
+        
         conn.commit()
         cur.close()
+        return True
     except Exception as e:
         print(f"Database delete error: {e}")
         if conn:
@@ -94,8 +106,71 @@ def delete_application(app_id: int):
     finally:
         if conn:
             conn.close()
+           
+def delete_job_application(app_id: int, user_id: int):
+    """Delete job application from dashboard with user security check"""
+    conn = None
+    try:
+        conn = psycopg2.connect(DB_URL)
+        cur = conn.cursor()
+        
+        # Security: Only delete if the application belongs to the user
+        cur.execute("""
+            DELETE FROM job_applications 
+            WHERE id = %s AND user_id = %s
+        """, (app_id, user_id))
+        
+        # Check if any row was actually deleted
+        if cur.rowcount == 0:
+            raise ValueError("Application not found or you don't have permission to delete it")
+        
+        # Also delete related timeline entries
+        cur.execute("""
+            DELETE FROM application_timeline 
+            WHERE application_id = %s
+        """, (app_id,))
+        
+        # Delete related interviews
+        cur.execute("""
+            DELETE FROM interviews 
+            WHERE application_id = %s
+        """, (app_id,))
+        
+        conn.commit()
+        cur.close()
+        return True
+        
+    except Exception as e:
+        print(f"Database delete error: {e}")
+        if conn:
+            conn.rollback()
+        raise e
+    finally:
+        if conn:
+            conn.close()            
             
-            
+def fetch_applications_with_user_numbering(user_id):
+    """
+    Fetch applications for a specific user with user-specific numbering
+    """
+    try:
+        conn = psycopg2.connect(DB_URL)
+        cur = conn.cursor()
+        cur.execute("""
+            SELECT 
+                ROW_NUMBER() OVER (ORDER BY created_at ASC) as user_app_number,
+                id as global_id,
+                skills_match, 
+                cover_letter, 
+                created_at 
+            FROM applications 
+            WHERE user_id = %s 
+            ORDER BY created_at DESC
+        """, (user_id,))
+        return cur.fetchall()
+    except Exception as e:
+        print(f"Error fetching applications: {e}")
+        return []            
 
 def create_enhanced_tables():
     """Create enhanced database schema for application tracking"""
@@ -103,6 +178,11 @@ def create_enhanced_tables():
     cur = conn.cursor()
     
     try:
+        
+        cur.execute("""
+            ALTER TABLE applications 
+            ADD COLUMN IF NOT EXISTS user_id INT REFERENCES users(id) ON DELETE CASCADE
+        """)
         # Companies table
         cur.execute("""
             CREATE TABLE IF NOT EXISTS companies (
@@ -235,12 +315,23 @@ def add_job_application(user_id, company_name, position_title, job_description="
         cur.close()
         conn.close()
 
-def update_application_status(app_id, new_status, notes=""):
+def update_application_status(app_id, new_status, notes="", user_id=None):
     """Update application status and log timeline"""
     conn = psycopg2.connect(DB_URL)
     cur = conn.cursor()
     
     try:
+        # Update application
+        if user_id:
+            # Security check: ensure the application belongs to the user
+            cur.execute("""
+                SELECT id FROM job_applications 
+                WHERE id = %s AND user_id = %s
+            """, (app_id, user_id))
+            
+            if not cur.fetchone():
+                raise ValueError("Application not found or you don't have permission to update it")
+        
         # Update application
         cur.execute("""
             UPDATE job_applications 
@@ -294,6 +385,8 @@ def get_user_applications(user_id, status_filter=None):
     finally:
         cur.close()
         conn.close()
+    
+        
 
 def get_application_stats(user_id):
     """Get application statistics"""
@@ -340,5 +433,4 @@ def get_application_stats(user_id):
         return {}
     finally:
         cur.close()
-        conn.close()            
-  
+        conn.close()

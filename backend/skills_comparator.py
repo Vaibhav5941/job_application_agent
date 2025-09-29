@@ -5,7 +5,7 @@ import re
 from utils.config import COHERE_API_KEY
 
 # Initialize Cohere model
-llm = ChatCohere(model="command-r-plus", temperature=0, cohere_api_key=COHERE_API_KEY)
+llm = ChatCohere(model="command-a-03-2025", temperature=0, cohere_api_key=COHERE_API_KEY)
 
 def clean_llm_response(response: str) -> str:
     """Clean LLM response to extract valid JSON"""

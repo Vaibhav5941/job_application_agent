@@ -4,6 +4,9 @@ from datetime import datetime
 import re
 import cohere
 from backend.resume_parser import parse_resume
+from frontend.components.footer import render_footer
+from frontend.components.header import render_header
+
 
 # Add backend to path
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "backend"))
@@ -15,6 +18,20 @@ except ImportError as e:
     st.error("Please ensure your email_sender module is properly configured")
     st.stop()
 
+# Hydrate session from cookie token if needed
+from backend.auth import get_user_by_token
+from utils import SESSION_COOKIE_NAME
+if "user" not in st.session_state or not st.session_state.user:
+    try:
+        token = st.session_state.get("session_token") or st.experimental_get_cookie(SESSION_COOKIE_NAME)
+        if token:
+            user = get_user_by_token(token)
+            if user:
+                st.session_state.user = user
+                st.session_state.session_token = token
+    except Exception:
+        pass
+
 # Initialize Cohere client
 COHERE_API_KEY = os.getenv("COHERE_API_KEY")
 if COHERE_API_KEY:
@@ -24,14 +41,22 @@ else:
 
 # Page configuration
 st.set_page_config(
-    page_title="Email Sender",
+    page_title="Professional Email Sender - AI Job Application Agent",
     page_icon="✉️",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
+render_header()
 # Custom CSS
 st.markdown("""
 <style>
+    .stApp {
+        background-image: url("https://cfcdn.apowersoft.info/astro/picwish/_astro/main-title-icon-1.wmRL6OHI.png");
+        background-size: cover;
+        background-position: center;
+        background-attachment: fixed;
+    }
             * {
             margin: 0;
             padding: 0;
@@ -106,6 +131,11 @@ st.markdown("""
             font-size: 0.9rem;
             font-weight: 500;
             transition: all 0.3s ease;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
         }
         
         .badge:hover {
@@ -114,7 +144,7 @@ st.markdown("""
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
         
-
+        
         
         .demo-text {
             text-align: center;
@@ -305,9 +335,9 @@ st.markdown("""
     }
     
     .success-message {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        color: #155724;
+        background-color: #e3f2fd;
+        border: 1px solid #90caf9;
+        color: #1a237e;
         padding: 1rem;
         border-radius: 8px;
         margin: 1rem 0;
@@ -337,20 +367,29 @@ st.markdown("""
         margin: 0.5rem;
     }
     
-    .ai-section {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 1.5rem;
-        border-radius: 10px;
-        margin: 1rem 0;
-    }
-    
-    .ai-input {
-        background: white;
-        border-radius: 8px;
-        padding: 1rem;
-        margin: 1rem 0;
-    }
+    .ai-modal {
+            border: 2px solid #667eea;
+            border-radius: 15px;
+            padding: 1.5rem;
+            background: rgba(255,255,255,0.95);
+            margin: 1rem 0;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
+            transition: all 0.3s ease;
+        }
+        .ai-modal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 35px rgba(102, 126, 234, 0.3);
+        }
+        .ai-modal h4 {
+            color: #667eea;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+        .ai-modal p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
 </style>
 """, unsafe_allow_html=True)
 
@@ -372,10 +411,15 @@ st.markdown("""
 
 # Authentication check
 if "user" not in st.session_state or not st.session_state.user:
-    st.error("🔒 Access Denied: Please log in to send emails")
+    st.markdown("""
+    <div class="card" style="text-align: center;">
+            <h3>🔒 Access Denied</h3>
+            <p>Please log in to access the Resume & Job Description Analysis feature.</p>
+    </div>
+    """, unsafe_allow_html=True)
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("🔑 Go to Login", type="primary", use_container_width=True):
+        if st.button("🛡️ Go to Login", type="primary", use_container_width=True):
             st.switch_page("pages/0_👤_Auth.py")
     with col2:
         if st.button("🏠 Home", use_container_width=True):
@@ -506,18 +550,10 @@ with col2:
     
     # Modal/Popup for AI Generation
     if st.session_state.show_ai_modal:
-        with st.container():
             st.markdown("""
-            <div style="
-                border: 2px solid #4CAF50;
-                border-radius: 10px;
-                padding: 20px;
-                background-color: #f8f9fa;
-                margin: 10px 0;
-                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            ">
-                <h4 style="color: #4CAF50; margin-bottom: 15px;">🤖 AI Email Generator</h4>
-                <p style="color: #666; margin-bottom: 20px;">Generate personalized emails using AI</p>
+            <div class="ai-modal">
+                <h4>🤖 AI Email Generator</h4>
+                <p>Generate personalized emails using AI based on your resume and job description</p>
             </div>
             """, unsafe_allow_html=True)
             
@@ -556,7 +592,7 @@ with col2:
                                 resume_text = parse_resume(resume_file.name)
                                 
                                 # ✅ Agentic AI Prompt: combine resume + JD
-                                prompt = f"""
+                                message = f"""
                                 You are an expert career assistant. Write a concise, professional job application email.
                                 
                                 📄 Candidate Resume: {resume_text[:2000]}  # limit length if resume is huge
@@ -576,15 +612,15 @@ with col2:
                                 BODY: [email body]
                                 """
                                 
-                                response = co.generate(
-                                    model="command-r-plus",
-                                    prompt=prompt,
+                                response = co.chat(
+                                    model="command-a-03-2025",
+                                    message=message,
                                     max_tokens=500,
                                     temperature=0.6,
                                     stop_sequences=["--END--"]
                                 )
                                 
-                                ai_email = response.generations[0].text.strip()
+                                ai_email = response.text.strip()
                                 
                                 # Store generated email in session state
                                 st.session_state["email_body"] = ai_email
@@ -881,23 +917,24 @@ with st.expander("💡 Email Best Practices & Tips"):
 st.markdown("---")
 st.subheader("⚡ Quick Actions")
 
+"""Render navigation buttons"""
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    if st.button("📊 Analyze Resume", use_container_width=True):
-        st.switch_page("pages/2_📊_Analysis.py")
+        if st.button("Skills Analysis", use_container_width=True):
+            st.switch_page("pages/2_📊_Analysis.py")
 
-with col2:
-    if st.button("📈 View Dashboard", use_container_width=True):
-        st.switch_page("pages/5_📊_Dashboard.py")
+with col2:    
+        if st.button("Email", use_container_width=True):
+            st.switch_page("pages/3_✉️_Email.py")
 
 with col3:
-    if st.button("📚 View History", use_container_width=True):
-        st.switch_page("pages/4_📂_History.py")
+        if st.button("Dashboard", use_container_width=True):
+            st.switch_page("pages/5_📊_Dashboard.py")
 
 with col4:
-    if st.button("🏠 Home", use_container_width=True):
-        st.switch_page("pages/1_🏠_Home.py")
+        if st.button("History", use_container_width=True):
+            st.switch_page("pages/4_📂_History.py")
 
 # Footer
 st.markdown("---")
@@ -908,3 +945,4 @@ st.markdown("""
     <p>📧 Need help with Gmail setup? Check the Authentication page for detailed instructions.</p>
 </div>
 """, unsafe_allow_html=True)
+render_footer()
