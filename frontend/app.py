@@ -15,6 +15,7 @@ def load_custom_css():
     """Load custom CSS for responsive design"""
     st.markdown("""
     <style>
+         
         /* Reset and base styles */
         * {
             margin: 0;

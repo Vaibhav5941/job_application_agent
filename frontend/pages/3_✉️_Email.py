@@ -50,31 +50,41 @@ st.set_page_config(
 render_header()
 # Custom CSS
 st.markdown("""
-<style>
-    .stApp {
-        background-image: url("https://cfcdn.apowersoft.info/astro/picwish/_astro/main-title-icon-1.wmRL6OHI.png");
-        background-size: cover;
-        background-position: center;
-        background-attachment: fixed;
-    }
-            * {
+    <style>
+        /* =================================
+           BASE STYLES
+           ================================= */
+        
+        * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
         
+        .stApp {
+            background: url("https://cfcdn.apowersoft.info/astro/picwish/_astro/main-title-icon-1.wmRL6OHI.png");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        /* =================================
+           HEADER SECTION
+           ================================= */
         
         .email-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 1.2rem 2rem;
+            padding: 2rem;
             border-radius: 20px;
             text-align: center;
             margin-bottom: 2rem;
             box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
             position: relative;
             overflow: hidden;
+
         }
+
         
         .email-header::before {
             content: '';
@@ -88,47 +98,56 @@ st.markdown("""
         }
         
         .email-header h1 {
-            font-size: 2.2rem;
+            font-size: clamp(1.5rem, 4vw, 2.2rem);
             font-weight: 700;
-            margin-bottom: 0;
+            margin-bottom: 0.5rem;
             position: relative;
             z-index: 2;
             text-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         
         .email-header .icon {
-            font-size: 3.5rem;
-            margin-bottom: 0rem;
+            font-size: clamp(2rem, 6vw, 3.5rem);
+            margin-bottom: 1rem;
             display: inline-block;
             animation: float 2s ease-in-out infinite;
         }
         
         .email-header p {
-            font-size: 1 rem;
+            font-size: clamp(0.9rem, 2vw, 1.1rem);
             font-weight: 300;
             opacity: 0.95;
             position: relative;
             z-index: 2;
-            line-height: 1.2;
+            line-height: 1.4;
+            max-width: 600px;
+            margin: 0 auto;
         }
+
+        /* =================================
+           FEATURE BADGES
+           ================================= */
         
         .feature-badges {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 2rem;
-            flex-wrap: wrap;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: clamp(0.5rem, 2vw, 1rem);
+            margin-top: clamp(1rem, 2.5vw, 1.5rem);
+            padding: 0 1rem;
             position: relative;
             z-index: 2;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
         }
-        
+
         .badge {
             background: rgba(255,255,255,0.2);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255,255,255,0.3);
-            padding: 0.7rem 1.5rem;
+            padding: clamp(0.5rem, 1.5vw, 0.7rem) clamp(0.8rem, 2vw, 1.5rem);
             border-radius: 50px;
-            font-size: 0.9rem;
+            font-size: clamp(0.75rem, 1.5vw, 0.9rem);
             font-weight: 500;
             transition: all 0.3s ease;
             cursor: pointer;
@@ -136,241 +155,72 @@ st.markdown("""
             text-shadow: 0 1px 3px rgba(0,0,0,0.3);
             position: relative;
             overflow: hidden;
+            text-align: center;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+        }
+        
+        .badge::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
         }
         
         .badge:hover {
             background: rgba(255,255,255,0.3);
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            border: 2px solid rgba(255,255,255,0.6);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 25px rgba(0,0,0,0.25);
         }
         
-        
-        
-        .demo-text {
-            text-align: center;
-            color: #666;
-            font-size: 1.1rem;
-            line-height: 1.6;
+        .badge:hover::before {
+            left: 100%;
         }
-        
-        @keyframes shimmer {
-            0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(0deg); }
-            50% { transform: translateX(-50%) translateY(-50%) rotate(180deg); }
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-        
- @media (max-width: 1024px) {
-            .email-header {
-                padding: 2.5rem 2rem;
-            }
-            
-            .email-header h1 {
-                font-size: 2.4rem;
-            }
-            
-            .email-header .icon {
-                font-size: 3rem;
-            }
-        }
-        
-        /* Mobile landscape */
-        @media (max-width: 768px) {
-           
-            
-            .email-header {
-                padding: 2rem 1.5rem;
-                margin-bottom: 1.5rem;
-                border-radius: 15px;
-            }
-            
-            .email-header h1 {
-                font-size: 2rem;
-                margin-bottom: 0.8rem;
-            }
-            
-            .email-header .icon {
-                font-size: 2.5rem;
-                margin-bottom: 0.8rem;
-            }
-            
-            .email-header p {
-                font-size: 1.1rem;
-                line-height: 1.5;
-            }
-            
-            .feature-badges {
-                margin-top: 1.5rem;
-                gap: 0.8rem;
-            }
-            
-            .badge {
-                padding: 0.6rem 1.2rem;
-                font-size: 0.85rem;
-            }
-            
-            .content-area {
-                padding: 1.5rem;
-                border-radius: 12px;
-            }
-        }
-        
-        /* Mobile portrait */
-        @media (max-width: 480px) {
 
-            
-            .email-header {
-                padding: 1rem 1rem;
-                margin-bottom: 1rem;
-                border-radius: 12px;
-            }
-            
-            .email-header h1 {
-                font-size: 1.2rem;
-                margin-bottom: 0rem;
-            }
-            
-            .email-header .icon {
-                font-size: 2.2rem;
-                margin-bottom: 0rem;
-            }
-            
-            .email-header p {
-                font-size: 0.8rem;
-                line-height: 1;
-            }
-            
-            .feature-badges {
-                flex-direction: row;
-                align-items: center;
-                gap: 0.5rem;
-                margin-top: 1.2rem;
-            }
-            
-            .badge {
-                width: fit-content;
-                padding: 0.5rem 1rem;
-                font-size: 0.8rem;
-            }
-            
-            .content-area {
-                padding: 1.2rem;
-                border-radius: 10px;
-            }
-            
-            .demo-text h3 {
-                font-size: 1.1rem;
-            }
-            
-            .demo-text p {
-                font-size: 0.95rem;
-            }
+        /* =================================
+           CARD COMPONENTS
+           ================================= */
+        
+        .card {
+            background: rgba(255,255,255,0.95);
+            padding: clamp(1rem, 3vw, 2rem);
+            border-radius: clamp(12px, 2vw, 15px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            margin: 0 auto clamp(1rem, 3vw, 2rem) auto;
+            text-align: left;
+            border: 1px solid rgba(255,255,255,0.2);
+            transition: all 0.3s ease;
+            max-width: min(95%, 1200px);
+            width: 100%;
         }
         
-        /* Small mobile */
-        @media (max-width: 360px) {
-            body {
-                padding: 8px;
-            }
-            
-            .email-header {
-                padding: 1.2rem 0.8rem;
-            }
-            
-            .email-header h1 {
-                font-size: 1.6rem;
-            }
-            
-            .email-header .icon {
-                font-size: 2rem;
-            }
-            
-            .email-header p {
-                font-size: 0.95rem;
-            }
-            
-            .badge {
-                padding: 0.4rem 0.8rem;
-                font-size: 0.75rem;
-            }
-            
-            .content-area {
-                padding: 1rem;
-            }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            border: 1px solid rgba(102, 126, 234, 0.3);
         }
-    
-    .email-form {
-        background-color: #f8f9fa;
-        padding: 2rem;
-        border-radius: 10px;
-        border: 1px solid #dee2e6;
-    }
-    
-    .template-card {
-        background: white;
-        padding: 1.5rem;
-        border-radius: 8px;
-        border: 1px solid #dee2e6;
-        margin: 0.5rem 0;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-    
-    .template-card:hover {
-        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        border-color: #667eea;
-    }
-    
-    .email-preview {
-        background-color: white;
-        border: 1px solid #dee2e6;
-        border-radius: 8px;
-        padding: 1.5rem;
-        font-family: 'Times New Roman', serif;
-        line-height: 1.6;
-        white-space: pre-wrap;
-    }
-    
-    .success-message {
-        background-color: #e3f2fd;
-        border: 1px solid #90caf9;
-        color: #1a237e;
-        padding: 1rem;
-        border-radius: 8px;
-        margin: 1rem 0;
-    }
-    
-    .tips-box {
-        background-color: #e8f4f8;
-        border-left: 4px solid #17a2b8;
-        padding: 1rem;
-        margin: 1rem 0;
-        border-radius: 4px;
-    }
-    
-    .char-counter {
-        font-size: 0.8rem;
-        color: #6c757d;
-        text-align: right;
-        margin-top: 0.25rem;
-    }
-    
-    .email-stats {
-        background: white;
-        padding: 1rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        text-align: center;
-        margin: 0.5rem;
-    }
-    
-    .ai-modal {
+
+        .success-message {
+            background: linear-gradient(135deg, #e3f2fd, #bbdefb);
+            color: #1a237e;
+            padding: clamp(0.8rem, 2vw, 1rem) clamp(1rem, 2.5vw, 1.5rem);
+            border-radius: clamp(10px, 2vw, 12px);
+            font-size: clamp(0.9rem, 1.8vw, 1rem);
+            font-weight: 500;
+            border: 1px solid #90caf9;
+            margin-bottom: clamp(1rem, 3vw, 2rem);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        }
+
+        .ai-modal {
             border: 2px solid #667eea;
             border-radius: 15px;
-            padding: 1.5rem;
+            padding: clamp(1rem, 2.5vw, 1.5rem);
             background: rgba(255,255,255,0.95);
             margin: 1rem 0;
             box-shadow: 0 10px 30px rgba(102, 126, 234, 0.2);
@@ -383,15 +233,351 @@ st.markdown("""
         .ai-modal h4 {
             color: #667eea;
             margin-bottom: 1rem;
-            font-size: 1.3rem;
+            font-size: clamp(1.1rem, 2.5vw, 1.3rem);
             font-weight: 700;
         }
         .ai-modal p {
             color: #666;
             margin-bottom: 1.5rem;
+            font-size: clamp(0.9rem, 1.8vw, 1rem);
         }
-</style>
-""", unsafe_allow_html=True)
+
+        /* =================================
+           FORM INPUTS
+           ================================= */
+        
+        .stTextInput > div > input, 
+        .stTextArea > div > textarea, 
+        {
+            border-radius: 10px;
+            border: 1px solid #90caf9;
+            background: #fafafa;
+            transition: all 0.3s ease;
+            font-size: max(16px, 0.95rem);
+            padding: 0.7rem 1rem;
+        }
+        
+        .stTextInput > div > input:focus, 
+        .stTextArea > div > textarea:focus,
+        .stSelectbox > div > div:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+            outline: none;
+        }
+
+        .stFileUploader > div {
+            border: 2px dashed #90caf9;
+            border-radius: 10px;
+            padding: clamp(0.8rem, 2vw, 1.2rem);
+            background: rgba(227, 242, 253, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .stFileUploader > div:hover {
+            border-color: #667eea;
+            background: rgba(227, 242, 253, 0.5);
+        }
+
+        /* Character counter */
+        .char-counter {
+            font-size: clamp(0.75rem, 1.5vw, 0.8rem);
+            color: #6c757d;
+            text-align: right;
+            margin-top: 0.25rem;
+            font-style: italic;
+        }
+
+        /* =================================
+           BUTTON SYSTEM - RESPONSIVE GRID
+           ================================= */
+        
+        /* Standard buttons */
+        div[data-testid="stButton"] {
+            display: flex;
+            justify-content: center;
+        }
+        
+        div[data-testid="stButton"] > button {
+            width: 100%;
+            background: #e3f2fd;
+            border: 1px solid #90caf9;
+            padding: clamp(0.6rem, 1.5vw, 0.7rem) clamp(1rem, 2vw, 1.2rem);
+            border-radius: 50px;
+            font-size: clamp(0.85rem, 1.8vw, 0.95rem);
+            font-weight: 600;
+            color: #1a237e;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            
+            min-height: 44px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        div[data-testid="stButton"] > button:hover {
+            background: #ede7f6;
+            border: 1px solid #b39ddb;
+            color: #311b92;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        /* Form submit buttons */
+        div[data-testid="stForm"] div[data-testid="stButton"] > button {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            font-weight: 700;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+        
+        div[data-testid="stForm"] div[data-testid="stButton"] > button:hover {
+            background: linear-gradient(135deg, #5a6fd8, #6a4190);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Navigation button grid */
+        .nav-buttons-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 2fr));
+            gap: clamp(0.5rem, 2vw, 1rem);
+            margin: clamp(1rem, 2vw, 1.5rem) 0;
+        }
+
+        /* =================================
+           EXPANDERS
+           ================================= */
+        
+        .streamlit-expanderHeader {
+            background: rgba(255,255,255,0.9);
+            border-radius: 10px;
+            border: 1px solid #e0e0e0;
+            padding: clamp(0.6rem, 1.5vw, 0.8rem);
+            transition: all 0.3s ease;
+            font-size: clamp(0.9rem, 1.8vw, 1rem);
+            min-height: 44px;
+        }
+        
+        .streamlit-expanderHeader:hover {
+            border-color: #667eea;
+            background: rgba(227, 242, 253, 0.5);
+        }
+
+        /* =================================
+           TYPOGRAPHY
+           ================================= */
+        
+        h2, h3, h4 {
+            color: #1a237e;
+            font-weight: 700;
+            margin-bottom: clamp(0.5rem, 2vw, 1rem);
+            line-height: 1.3;
+        }
+        
+        h2 {
+            font-size: clamp(1.3rem, 3.5vw, 1.8rem);
+        }
+        
+        h3 {
+            font-size: clamp(1.1rem, 3vw, 1.6rem);
+        }
+        
+        h4 {
+            font-size: clamp(1rem, 2.5vw, 1.3rem);
+        }
+
+        /* =================================
+           ALERTS & MESSAGES
+           ================================= */
+        
+        .stSuccess, .stError, .stWarning, .stInfo {
+            border-radius: 10px;
+            border-left: 4px solid;
+            padding: clamp(0.8rem, 2vw, 1rem);
+            margin: clamp(0.5rem, 2vw, 1rem) 0;
+            font-size: clamp(0.9rem, 1.8vw, 1rem);
+        }
+
+        /* =================================
+           ANIMATIONS
+           ================================= */
+        
+        @keyframes shimmer {
+            0%, 100% { transform: translateX(-100%) translateY(-100%) rotate(0deg); }
+            50% { transform: translateX(-50%) translateY(-50%) rotate(180deg); }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* =================================
+           RESPONSIVE BREAKPOINTS
+           ================================= */
+
+        /* Tablet Landscape (768px - 1023px) */
+        @media (max-width: 1023px) and (min-width: 768px) {
+            .feature-badges {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .nav-buttons-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Tablet Portrait (600px - 767px) */
+        @media (max-width: 767px) and (min-width: 600px) {
+            .email-header {
+                padding: 1.2rem;
+            }
+            
+            .feature-badges {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.8rem;
+            }
+            
+            .badge {
+                white-space: normal;
+                line-height: 1.3;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .nav-buttons-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        /* Mobile Landscape (480px - 599px) */
+        @media (max-width: 599px) and (min-width: 480px) {
+            .email-header {
+                padding: 1rem;
+                border-radius: 15px;
+            }
+            
+            .feature-badges {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.6rem;
+            }
+            
+            .badge {
+                padding: 0.6rem 0.8rem;
+                white-space: normal;
+                min-height: 50px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .card {
+                padding: 1.2rem;
+            }
+            
+            .nav-buttons-container {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 0.8rem;
+            }
+        }
+
+        /* Mobile Portrait (320px - 479px) */
+        @media (max-width: 479px) {
+            .email-header {
+                padding: 2rem 1rem;
+                border-radius: 18px;
+                margin-bottom: 1.5rem;
+            }
+
+            .email-header h1 {
+                font-size: 1.8rem;
+                margin-bottom: 1rem;
+            }
+            
+            
+            .email-header .icon {
+                font-size: 2rem;
+            }
+            
+            .email-header p {
+                font-size: 1rem;
+                line-height: 1.5;
+                margin-bottom: 1rem;
+            }
+            
+            .feature-badges {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1rem;
+                margin-top: 2rem;
+                padding: 0;
+                max-width: 100%;
+            }
+            
+            .badge {
+                padding: 0.7rem 1rem;
+                white-space: normal;
+                min-height: 44px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                text-align: center;
+            }
+            
+            .card {
+                padding: 1rem;
+                border-radius: 12px;
+            }
+            
+            .nav-buttons-container {
+                grid-template-columns: 1fr;
+                gap: 0.6rem;
+            }
+            
+            /* Stack columns on mobile */
+            div[data-testid="column"] {
+                width: 100% !important;
+                flex: 1 1 100% !important;
+                min-width: 100% !important;
+            }
+            
+            div[data-testid="stButton"] > button {
+                font-size: 0.9rem;
+                padding: 0.7rem 1rem;
+            }
+            
+        }
+
+ 
+
+        /* =================================
+           ACCESSIBILITY IMPROVEMENTS
+           ================================= */
+        
+        @media (pointer: coarse) {
+            div[data-testid="stButton"] > button,
+            .streamlit-expanderHeader,
+            .badge {
+                min-height: 44px;
+                min-width: 44px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+    """, unsafe_allow_html=True)
 
 # Header
 st.markdown("""
@@ -757,6 +943,7 @@ with st.form("email_form"):
         st.markdown("• Maintain professional tone")
     
     # Send button
+    
     col1, col2, col3 = st.columns([1, 1, 2])
     
     with col1:
@@ -778,12 +965,12 @@ if send_email_button:
         st.error("⚠️ Please fill in all required fields (Recipient, Subject, Body)")
     elif not re.match(r'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}', recipient):
         st.error("⚠️ Please enter a valid recipient email address")
+    elif "[" in body or "]" in body or "[" in subject or "]" in subject:
+        # Check for placeholders and stop if found
+        st.warning("⚠️ Warning: Your email contains placeholders [like this]. Please replace them before sending.")
+        st.info("💡 Tip: Replace placeholders like [Your Name], [Company Name], [Position Title] with actual information.")    
     else:
         # Show warnings for placeholders
-        if "[" in body or "]" in body:
-            st.warning("⚠️ Warning: Your email contains placeholders [like this]. Consider replacing them before sending.")
-        
-        # Send the email
         with st.spinner("Sending email..."):
             try:
                 # Prepare attachments
@@ -916,25 +1103,28 @@ with st.expander("💡 Email Best Practices & Tips"):
 # ============================================================================
 st.markdown("---")
 st.subheader("⚡ Quick Actions")
+# Using HTML/CSS grid for better responsive control
+st.markdown('<div class="nav-buttons-container">', unsafe_allow_html=True)
 
-"""Render navigation buttons"""
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-        if st.button("Skills Analysis", use_container_width=True):
-            st.switch_page("pages/2_📊_Analysis.py")
+    if st.button("📊 Skills Analysis", use_container_width=True):
+        st.switch_page("pages/2_📊_Analysis.py")
 
 with col2:    
-        if st.button("Email", use_container_width=True):
-            st.switch_page("pages/3_✉️_Email.py")
+    if st.button("📧 Email", use_container_width=True):
+        st.switch_page("pages/3_✉️_Email.py")
 
 with col3:
-        if st.button("Dashboard", use_container_width=True):
-            st.switch_page("pages/5_📊_Dashboard.py")
+    if st.button("📈 Dashboard", use_container_width=True):
+        st.switch_page("pages/5_📊_Dashboard.py")
 
 with col4:
-        if st.button("History", use_container_width=True):
-            st.switch_page("pages/4_📂_History.py")
+    if st.button("📂 History", use_container_width=True):
+        st.switch_page("pages/4_📂_History.py")
+
+st.markdown('</div>', unsafe_allow_html=True)
 
 # Footer
 st.markdown("---")

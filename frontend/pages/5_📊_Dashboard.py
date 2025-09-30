@@ -405,6 +405,7 @@ def load_custom_css():
                 padding: 0.8rem; 
                 border-radius: 8px;
             }
+            
             .metric-value { font-size: 1.3rem; }
             .metric-label { font-size: 0.8rem; }
             
