@@ -51,6 +51,47 @@ render_header()
 # Custom CSS
 st.markdown("""
     <style>
+    section[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #f8f9fa 0%, #e3f2fd 100%);
+    padding: 12px;
+    border-right: 2px solid #d0d7de;
+    }
+
+    /* Sidebar title/logo area */
+    section[data-testid="stSidebar"] div[data-testid="stSidebarNav"] h2 {
+    color: #0d47a1;
+    font-weight: 700;
+    margin-bottom: 12px;
+    text-align: center;
+    }
+
+    /* Sidebar list items */
+    section[data-testid="stSidebar"] div[data-testid="stSidebarNav"] li {
+    background: #ffffff;
+    margin: 6px 0;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 18px;
+ 
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease-in-out;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    /* Hover effect */
+    section[data-testid="stSidebar"] div[data-testid="stSidebarNav"] li:hover {
+    background: #667eea;
+    color: #ffffff;
+    transform: translateX(5px);
+    }
+
+    /* Active item highlight */
+    section[data-testid="stSidebar"] div[data-testid="stSidebarNav"] li:has(svg) {
+    background: #bbdefb;
+    color: #0d47a1;
+   }
         /* =================================
            BASE STYLES
            ================================= */
